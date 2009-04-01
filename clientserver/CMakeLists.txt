@@ -1,0 +1,4 @@
+PROJECT(NetworkHelloWorld)
+
+ADD_SUBDIRECTORY(server)
+ADD_SUBDIRECTORY(client)
