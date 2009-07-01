@@ -1,0 +1,50 @@
+# Copyright 2008 Bernd Steinhauser <berniyh@exherbo.org>
+# Distributed under the terms of the GNU General Public License v2
+
+# Add a local FPATH
+if [[ -d /etc/zsh/site-functions ]]; then
+	FPATH=/etc/zsh/site-functions:${FPATH}
+fi
+
+alias ls='ls --color=auto'
+
+setprompt () {
+    ###
+    # Need this so the prompt will work.
+
+    setopt prompt_subst
+
+
+    ###
+    # See if we can use colors.
+
+    autoload colors zsh/terminfo
+    if [[ "$terminfo[colors]" -ge 8 ]]; then
+        colors
+    fi
+    for color in RED GREEN YELLOW BLUE MAGENTA CYAN WHITE; do
+        eval PR_$color='%{$terminfo[bold]$fg[${(L)color}]%}'
+        eval PR_LIGHT_$color='%{$fg[${(L)color}]%}'
+        (( count = $count + 1 ))
+    done
+    PR_NO_COLOR="%{$terminfo[sgr0]%}"
+
+    ###
+    # Finally, the prompt.
+
+    HOST_COLOR=$PR_GREEN
+    case $USER in
+    michael)
+        USER_COLOR=$PR_LIGHT_GREEN;;
+    mediapc)
+        USER_COLOR=$PR_LIGHT_BLUE;;
+    root)
+        USER_COLOR=$PR_RED;;
+    *)
+        USER_COLOR=$PR_LIGHT_WHITE;;
+    esac
+    PROMPT="[$USER_COLOR%n$PR_BLUE@$HOST_COLOR%m:$PR_LIGHT_YELLOW%2c$PR_NO_COLOR] %(!.#.$) "
+    RPROMPT="$PR_LIGHT_CYAN(%D{%a %H:%M})$PR_NO_COLOR"
+}
+
+setprompt
