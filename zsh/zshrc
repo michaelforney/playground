@@ -23,13 +23,13 @@ setopt correctall
 zmodload -a zsh/stat stat
 zmodload -a zsh/zpty zpty
 zmodload -a zsh/zprof zprof
-zmodload -ap zsh/mapfile mapfile
+#zmodload -ap zsh/mapfile mapfile
 
 alias ls='ls --color=auto'
 
 selfupdate() {
     ZSHRC_URL="http://github.com/michaelforney/playground/raw/master/zsh/zshrc"
-    echo "Updating zshrc from $URL..."
+    echo "Updating zshrc from $ZSHRC_URL..."
     echo "Press Ctrl+C within 5 seconds to abort..."
     sleep 5
     cp /etc/zsh/zshrc /tmp/zshrc.bak
