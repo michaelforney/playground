@@ -60,8 +60,15 @@ setprompt () {
 
     ###
     # Finally, the prompt.
+    case $HOST in
+    michael)
+        HOST_COLOR=$PR_GREEN;;
+    michael-laptop)
+        HOST_COLOR=$PR_BLUE;;
+    fileserver)
+        HOST_COLOR=$PR_LIGHT_RED;;
+    esac
 
-    HOST_COLOR=$PR_GREEN
     case $USER in
     michael)
         USER_COLOR=$PR_LIGHT_GREEN;;
