@@ -6,7 +6,36 @@ if [[ -d /etc/zsh/site-functions ]]; then
 	FPATH=/etc/zsh/site-functions:${FPATH}
 fi
 
+HISTFILE=~/.histfile
+HISTSIZE=2000
+SAVEHIST=2000
+
+setopt INC_APPEND_HISTORY SHARE_HISTORY
+setopt APPEND_HISTORY
+setopt CORRECT
+setopt EXTENDED_HISTORY
+#setopt MENUCOMPLETE
+setopt ALL_EXPORT
+
+setopt appendhistory autocd beep extendedglob nomatch
+setopt correctall
+
+zmodload -a zsh/stat stat
+zmodload -a zsh/zpty zpty
+zmodload -a zsh/zprof zprof
+zmodload -ap zsh/mapfile mapfile
+
 alias ls='ls --color=auto'
+
+selfupdate() {
+    ZSHRC_URL="http://github.com/michaelforney/playground/raw/master/zsh/zshrc"
+    echo "Updating zshrc from $URL..."
+    echo "Press Ctrl+C within 5 seconds to abort..."
+    sleep 5
+    cp /etc/zsh/zshrc /tmp/zshrc.bak
+    sudo wget $ZSHRC_URL -O /etc/zsh/zshrc
+    echo "Done. Old zshrc saved to /tmp/zshrc"
+}
 
 setprompt () {
     ###
@@ -47,4 +76,8 @@ setprompt () {
     RPROMPT="$PR_LIGHT_CYAN(%D{%a %H:%M})$PR_NO_COLOR"
 }
 
+autoload -Uz compinit
+compinit
+
 setprompt
+

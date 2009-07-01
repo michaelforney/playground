@@ -17,7 +17,7 @@ int main(int argc, char ** argv)
     addressHints.ai_socktype = SOCK_STREAM; // We are using a stream socket
     addressHints.ai_flags = AI_PASSIVE; // This is a listening connection, so we let getaddrinfo() fill in our own ip
 
-    int error = getaddrinfo(NULL, "35246", &addressHints, &addressInfo); // Get address info for ourself. We leave the IP blank, but specify the port we want to listen on
+    int error = getaddrinfo(NULL, "5001", &addressHints, &addressInfo); // Get address info for ourself. We leave the IP blank, but specify the port we want to listen on
     if (error) // If there was an error with getaddrinfo()
     {
         printf("Failed to get address info for the server\n");
