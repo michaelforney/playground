@@ -32,8 +32,14 @@ selfupdate() {
     echo "Updating zshrc from $ZSHRC_URL..."
     echo "Press Ctrl+C within 5 seconds to abort..."
     sleep 5
-    cp /etc/zsh/zshrc /tmp/zshrc.bak
-    sudo wget $ZSHRC_URL -O /etc/zsh/zshrc
+    case `uname -s` in
+    Linux)
+        ZSHRC_FILE=/etc/zsh/zshrc;;
+    *)
+        ZSHRC_FILE=/etc/zshrc;;
+    esac
+    cp $ZSHRC_FILE /tmp/zshrc.bak
+    sudo wget $ZSHRC_URL -O $ZSHRC_FILE
     echo "Done. Old zshrc saved to /tmp/zshrc"
 }
 
@@ -69,16 +75,18 @@ setprompt () {
         HOST_COLOR=$PR_LIGHT_RED;;
     esac
 
-    case $USER in
-    michael)
-        USER_COLOR=$PR_LIGHT_GREEN;;
-    mediapc)
-        USER_COLOR=$PR_LIGHT_BLUE;;
-    root)
+    if [[ $UID = 0 ]] ; then
         USER_COLOR=$PR_RED;;
-    *)
-        USER_COLOR=$PR_LIGHT_WHITE;;
-    esac
+    else
+        case $USER in
+        michael)
+            USER_COLOR=$PR_LIGHT_GREEN;;
+        mediapc)
+            USER_COLOR=$PR_LIGHT_BLUE;;
+        *)
+            USER_COLOR=$PR_LIGHT_WHITE;;
+        esac
+    fi
     PROMPT=$PR_WHITE"[$USER_COLOR%n$PR_WHITE@$HOST_COLOR%m$PR_WHITE:$PR_LIGHT_YELLOW%3c$PR_WHITE] %(!.#.$) $PR_NO_COLOR"
     RPROMPT="$PR_LIGHT_CYAN(%D{%a %H:%M})$PR_NO_COLOR"
 }
