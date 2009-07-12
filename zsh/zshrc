@@ -76,7 +76,7 @@ setprompt () {
     esac
 
     if [[ $UID = 0 ]] ; then
-        USER_COLOR=$PR_RED;;
+        USER_COLOR=$PR_RED
     else
         case $USER in
         michael)
