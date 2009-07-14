@@ -43,6 +43,15 @@ selfupdate() {
     echo "Done. Old zshrc saved to /tmp/zshrc"
 }
 
+uppatch() {
+    if [[ -n "${1}" ]] || { echo "Usage: uppdate patchfile"; return 1 }
+    scp "${1}" mforney@obberon.com:~/public_html/exherbo-patches/
+    local url="http://obberon.com/exherbo-patches/${1}"
+    echo -n ${url} | xclip
+    echo ${url}
+    return 0
+}
+
 setprompt () {
     ###
     # Need this so the prompt will work.
