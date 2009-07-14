@@ -44,9 +44,20 @@ selfupdate() {
 }
 
 uppatch() {
-    if [[ -n "${1}" ]] || { echo "Usage: uppdate patchfile"; return 1 }
-    scp "${1}" mforney@obberon.com:~/public_html/exherbo-patches/
-    local url="http://obberon.com/exherbo-patches/${1}"
+    local srcfile, destfile
+    if [[ -f "${1}" ]] ; then
+        srcfile=${1}
+        destfile=$(basename ${srcfile})
+    elif [[ -t 0 ]] ; then
+        srcfile=$(tmpfile)
+        cat > ${srcfile}
+        destfile=$(date +%s)
+    else
+        echo "Usage: uppatch patchfile OR uppatch < patchfile"
+        return 1
+    fi
+    scp "${srcfile}" mforney@obberon.com:~/public_html/exherbo-patches/
+    local url="http://obberon.com/exherbo-patches/${destfile}"
     echo -n ${url} | xclip
     echo ${url}
     return 0
