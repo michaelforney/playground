@@ -44,19 +44,22 @@ selfupdate() {
 }
 
 uppatch() {
-    local srcfile, destfile
+    local srcfile destfile
     if [[ -f "${1}" ]] ; then
         srcfile=${1}
-        destfile=$(basename ${srcfile})
-    elif [[ -t 0 ]] ; then
-        srcfile=$(tmpfile)
+        destfile=$(basename ${srcfile} | sed -e "s/ /_/")
+    elif [[ ! -t 0 ]] ; then
+        srcfile=$(tempfile -m 0664)
         cat > ${srcfile}
-        destfile=$(date +%s)
+        destfile=$(date +%s).patch
     else
         echo "Usage: uppatch patchfile OR uppatch < patchfile"
         return 1
     fi
-    scp "${srcfile}" mforney@obberon.com:~/public_html/exherbo-patches/
+    scp "${srcfile}" mforney@obberon.com:~/public_html/exherbo-patches/${destfile}
+    if [[ ! -t 0 ]] ; then
+        rm ${srcfile}
+    fi
     local url="http://obberon.com/exherbo-patches/${destfile}"
     echo -n ${url} | xclip
     echo ${url}
