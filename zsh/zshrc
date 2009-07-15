@@ -1,8 +1,6 @@
 # Copyright 2008 Bernd Steinhauser <berniyh@exherbo.org>
 # Distributed under the terms of the GNU General Public License v2
 
-BROWSER=midori
-
 # Add a local FPATH
 if [[ -d /etc/zsh/site-functions ]]; then
 	FPATH=/etc/zsh/site-functions:${FPATH}
