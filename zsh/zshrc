@@ -131,8 +131,8 @@ bindkey "\e[F" end-of-line
 bindkey "\e[8~" end-of-line
 bindkey "\e[4~" end-of-line
 bindkey "\e[3~" delete-char
-bindkey "\e[D" backward-word
-bindkey "\e[C" forward-word
+bindkey "\e[d" backward-word
+bindkey "\e[c" forward-word
 
 setprompt
 
