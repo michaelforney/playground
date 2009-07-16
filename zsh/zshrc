@@ -25,18 +25,25 @@ zmodload -a zsh/zpty zpty
 zmodload -a zsh/zprof zprof
 #zmodload -ap zsh/mapfile mapfile
 
-alias ls='ls --color=auto'
+case $(uname -s) in
+Linux)
+    alias ls="ls --color=auto";;
+FreeBSD)
+    alias ls="ls -G";;
+esac
 
 selfupdate() {
     ZSHRC_URL="http://github.com/michaelforney/playground/raw/master/zsh/zshrc"
     echo "Updating zshrc from $ZSHRC_URL..."
     echo "Press Ctrl+C within 5 seconds to abort..."
     sleep 5
-    case `uname -s` in
+    case $(uname -s) in
     Linux)
         ZSHRC_FILE=/etc/zsh/zshrc;;
-    *)
+    FreeBSD)
         ZSHRC_FILE=/etc/zshrc;;
+    *)
+        ZSHRC_FILE=/etc/zsh/zshrc;;
     esac
     cp $ZSHRC_FILE /tmp/zshrc.bak
     sudo wget $ZSHRC_URL -O $ZSHRC_FILE
@@ -116,6 +123,13 @@ setprompt () {
 
 autoload -Uz compinit
 compinit
+
+bindkey "\e[H" beginning-of-line
+bindkey "\e[7~" beginning-of-line
+bindkey "\e[1~" beginning-of-line
+bindkey "\e[F" end-of-line
+bindkey "\e[8~" end-of-line
+bindkey "\e[4~" end-of-line
 
 setprompt
 
