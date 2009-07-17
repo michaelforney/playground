@@ -50,7 +50,7 @@ selfupdate() {
     echo "Done. Old zshrc saved to /tmp/zshrc"
 }
 
-uppatch() {
+patchup() {
     local srcfile destfile
     if [[ -f "${1}" ]] ; then
         srcfile=${1}
@@ -60,10 +60,10 @@ uppatch() {
         cat > ${srcfile}
         destfile=$(date +%s).patch
     else
-        echo "Usage: uppatch patchfile OR uppatch < patchfile"
+        echo "Usage: ${0} patchfile OR uppatch < patchfile"
         return 1
     fi
-    scp "${srcfile}" mforney@obberon.com:~/public_html/exherbo-patches/${destfile}
+    scp "${srcfile}" mforney@obberon.com:~/public_html/exherbo-patches/${destfile} || { echo Could not copy patch to server; return 1 }
     if [[ ! -t 0 ]] ; then
         rm ${srcfile}
     fi
@@ -71,6 +71,29 @@ uppatch() {
     echo -n ${url} | xclip
     echo ${url}
     return 0
+}
+
+patchls() {
+    ssh mforney@obberon.com "cd public_html/exherbo-patches; ls ${1}"
+    return $?
+}
+
+patchdone() {
+    if [[ ! -n "${1}" ]] ; then
+        echo "Usage: ${0} remote-patch-file"
+        return 1
+    fi
+    ssh mforney@obberon.com "cd public_html/exherbo-patches; if [[ ! -f \"${1}\" ]] ; then echo Patch file does not exist; exit 1; fi; mv -v \"${1}\" \"applied/${1}\""
+    return $?
+}
+
+patchrm() {
+    if [[ ! -n "${1}" ]] ; then
+        echo "Usage: ${0} remote-patch-file"
+        return 1
+    fi
+    ssh mforney@obberon.com "cd public_html/exherbo-patches; if [[ ! -f \"${1}\" ]] ; then echo Patch file does not exist; exit 1; fi; rm -vi \"${1}\""
+    return $?
 }
 
 setprompt () {
