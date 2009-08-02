@@ -12,6 +12,10 @@
 #include <lua.h>
 #include <lauxlib.h>
 
+#define setfieldstring(A, B, C, D) lua_pushstring(A, D); lua_setfield(A, (B < 0) ? (B - 1) : (B), (C));
+#define setfieldboolean(A, B, C, D) lua_pushboolean(A, D); lua_setfield(A, (B < 0) ? (B - 1) : (B), (C));
+#define setfieldinteger(A, B, C, D) lua_pushinteger(A, D); lua_setfield(A, (B < 0) ? (B - 1) : (B), (C));
+
 // typedef struct
 // {
 //     MpdObj * object;
@@ -110,11 +114,10 @@ void status_changed(MpdObj * object, ChangedStatusType type)
     }
 }
 
-static MpdObj * checkmpd(lua_State * L)
+static MpdObj * checkmpd(lua_State * L, int index)
 {
-    MpdObj ** mpd = (MpdObj **)luaL_checkudata(L, 1, "luampd");
-    printf("Object pointer: %x\nObject: %x\n", mpd, *mpd);
-    luaL_argcheck(L, mpd != NULL, 1, "'MpdObj *' expected");
+    MpdObj ** mpd = (MpdObj **)luaL_checkudata(L, index, "luampd");
+    luaL_argcheck(L, mpd != NULL, index, "'MpdObj *' expected");
 
     return *mpd;
 }
@@ -152,10 +155,10 @@ static int newmpd(lua_State * L)
     return 1;
 }
 
-static int connect(lua_State * L)
+static int luampd_connect(lua_State * L)
 {
     printf("connect()\n");
-    MpdObj * object = checkmpd(L);
+    MpdObj * object = checkmpd(L, 1);
     MpdError error;
 
     if (mpd_check_connected(object))
@@ -171,10 +174,10 @@ static int connect(lua_State * L)
     return 1;
 }
 
-static int disconnect(lua_State * L)
+static int luampd_disconnect(lua_State * L)
 {
     printf("disconnect()\n");
-    MpdObj * object = checkmpd(L);
+    MpdObj * object = checkmpd(L, 1);
 
     if (!mpd_check_connected(object))
     {
@@ -188,10 +191,10 @@ static int disconnect(lua_State * L)
     return 1;
 }
 
-static int next(lua_State * L)
+static int luampd_next(lua_State * L)
 {
     printf("next()\n");
-    MpdObj * object = checkmpd(L);
+    MpdObj * object = checkmpd(L, 1);
     printf("Object: %x\n", object);
     MpdError error;
 
@@ -207,6 +210,261 @@ static int next(lua_State * L)
     mpd_status_update(object);
 
     lua_pushboolean(L, error == MPD_OK);
+    return 1;
+}
+
+static int luampd_prev(lua_State * L)
+{
+    printf("prev()\n");
+    MpdObj * object = checkmpd(L, 1);
+    MpdError error;
+
+    if (!mpd_check_connected(object))
+    {
+        printf("not connected\n");
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    error = mpd_player_prev(object);
+    mpd_status_update(object);
+
+    lua_pushboolean(L, error == MPD_OK);
+    return 1;
+}
+
+static int luampd_play(lua_State * L)
+{
+    MpdObj * object = checkmpd(L, 1);
+    MpdError error;
+    if (!mpd_check_connected(object))
+    {
+        printf("not connected\n");
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    error = mpd_player_play(object);
+    mpd_status_update(object);
+
+    lua_pushboolean(L, error == MPD_OK);
+}
+
+static int luampd_pause(lua_State * L)
+{
+    printf("pause()\n");
+    MpdObj * object = checkmpd(L, 1);
+    MpdError error;
+    if (!mpd_check_connected(object))
+    {
+        printf("not connected\n");
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    error = mpd_player_pause(object);
+    mpd_status_update(object);
+
+    lua_pushboolean(L, error = MPD_OK);
+}
+
+static int luampd_stop(lua_State * L)
+{
+    MpdObj * object = checkmpd(L, 1);
+    MpdError error;
+    if (!mpd_check_connected(object))
+    {
+        printf("not connected\n");
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    error = mpd_player_stop(object);
+    mpd_status_update(object);
+
+    lua_pushboolean(L, error == MPD_OK);
+}
+
+static int luampd_set_random(lua_State * L)
+{
+    printf("set_random()\n");
+    MpdObj * object = checkmpd(L, 1);
+    int enabled = lua_toboolean(L, 2);
+    MpdError error;
+    if (!mpd_check_connected(object))
+    {
+        printf("not connected\n");
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    printf("setting random to %i\n", enabled); 
+    error = mpd_player_set_random(object, enabled);
+    mpd_status_update(object);
+
+    lua_pushboolean(L, error = MPD_OK);
+}
+
+static int luampd_get_random(lua_State * L)
+{
+    printf("get_random()\n");
+    MpdObj * object = checkmpd(L, 1);
+    MpdError error;
+    mpd_status_update(object);
+    if (!mpd_check_connected(object))
+    {
+        printf("not connected\n");
+        lua_pushnil(L);
+        return 1;
+    }
+
+    int enabled = mpd_player_get_random(object);
+    printf("random is %i\n", enabled); 
+    lua_pushboolean(L, enabled);
+    return 1;
+}
+
+static int luampd_set_repeat(lua_State * L)
+{
+    printf("set_repeat()\n");
+    MpdObj * object = checkmpd(L, 1);
+    int enabled = lua_toboolean(L, 2);
+    MpdError error;
+    if (!mpd_check_connected(object))
+    {
+        printf("not connected\n");
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    printf("setting repeat to %i\n", enabled); 
+    error = mpd_player_set_repeat(object, enabled);
+    mpd_status_update(object);
+
+    lua_pushboolean(L, error = MPD_OK);
+}
+
+static int luampd_get_repeat(lua_State * L)
+{
+    printf("get_repeat()\n");
+    MpdObj * object = checkmpd(L, 1);
+    MpdError error;
+    mpd_status_update(object);
+    if (!mpd_check_connected(object))
+    {
+        printf("not connected\n");
+        lua_pushnil(L);
+        return 1;
+    }
+
+    int enabled = mpd_player_get_repeat(object);
+    printf("repeat is %i\n", enabled); 
+    lua_pushboolean(L, enabled);
+    return 1;
+}
+
+static int luampd_play_id(lua_State * L)
+{
+    printf("play_id()\n");
+    MpdObj * object = checkmpd(L, 1);
+    int id = luaL_checkinteger(L, 2);
+    MpdError error;
+    if (!mpd_check_connected(object))
+    {
+        printf("not connected\n");
+        lua_pushboolean(L, 0);
+        return 1;
+    }
+
+    printf("playing song id to %i\n", id);
+    error = mpd_player_play_id(object, id);
+    mpd_status_update(object);
+
+    lua_pushboolean(L, error == MPD_OK);
+    return 1;
+}
+
+int luampd_get_song(lua_State * L)
+{
+    printf("get_song()\n");
+    MpdObj * object = checkmpd(L, 1);
+    MpdError error;
+    mpd_status_update(object);
+    if (!mpd_check_connected(object))
+    {
+        printf("not connected\n");
+        lua_pushnil(L);
+        return 1;
+    }
+
+    if (mpd_player_get_state(object) != MPD_PLAYER_PLAY)
+    {
+        printf("not playing any song\n");
+        lua_pushnil(L);
+        return 1;
+    }
+
+    int id = mpd_player_get_current_song_id(object);
+    printf("id is %i\n", id);
+    mpd_Song * song = mpd_playlist_get_song(object, id);
+    if (!song)
+    {
+        printf("Couldn't find song!!!!\n");
+        lua_pushnil(L);
+        return 1;
+    }
+    lua_newtable(L);
+    setfieldstring(L, -1, "file", song->file);
+    setfieldstring(L, -1, "artist", song->artist);
+    setfieldstring(L, -1, "title", song->title);
+    setfieldstring(L, -1, "album", song->album);
+    setfieldstring(L, -1, "track", song->track);
+    setfieldstring(L, -1, "name", song->name);
+    setfieldstring(L, -1, "date", song->date);
+    setfieldstring(L, -1, "genre", song->genre);
+    setfieldstring(L, -1, "composer", song->composer);
+    setfieldstring(L, -1, "performer", song->performer);
+    setfieldstring(L, -1, "disc", song->disc);
+    setfieldstring(L, -1, "comment", song->comment);
+    setfieldstring(L, -1, "albumartist", song->albumartist);
+    setfieldinteger(L, -1, "time", song->time);
+    setfieldinteger(L, -1, "pos", song->pos);
+    setfieldinteger(L, -1, "id", song->id);
+    mpd_freeSong(song);
+    return 1;
+}
+
+static int luampd_get_status(lua_State * L)
+{
+    MpdObj * object = checkmpd(L, 1);
+    MpdError error;
+    mpd_status_update(object);
+    if (!mpd_check_connected(object))
+    {
+        printf("not connected\n");
+        lua_pushnil(L);
+        return 1;
+    }
+
+    lua_newtable(L);
+    setfieldinteger(L, -1, "volume", mpd_status_get_volume(object));
+    // setfieldboolean(L, -1, "repeat", mpd_status_get_repeat(object));
+    // setfieldboolean(L, -1, "random", mpd_status_get_random(object));
+    // setfieldinteger(L, -1, "playlistLength", mpd_status_get_playlistLength(object));
+    // setfieldinteger(L, -1, "playlist", mpd_status_get_playlist(object));
+    // setfieldinteger(L, -1, "storedplaylist", mpd_status_get_storedplaylist(object));
+    // setfieldinteger(L, -1, "state", mpd_status_get_state(object));
+    setfieldinteger(L, -1, "crossfade", mpd_status_get_crossfade(object));
+    // setfieldinteger(L, -1, "song", mpd_status_get_song(object));
+    // setfieldinteger(L, -1, "songid", mpd_status_get_songid(object));
+    setfieldinteger(L, -1, "elapsed", mpd_status_get_elapsed_song_time(object));
+    setfieldinteger(L, -1, "total", mpd_status_get_total_song_time(object));
+    setfieldinteger(L, -1, "bitrate", mpd_status_get_bitrate(object));
+    setfieldinteger(L, -1, "samplerate", mpd_status_get_samplerate(object));
+    setfieldinteger(L, -1, "bits", mpd_status_get_bits(object));
+    setfieldinteger(L, -1, "channels", mpd_status_get_channels(object));
+    setfieldboolean(L, -1, "updating_db", mpd_status_db_is_updating(object));
+    setfieldstring(L, -1, "error", mpd_status_get_mpd_error(object));
     return 1;
 }
 
@@ -281,13 +539,21 @@ static int next(lua_State * L)
 
 static const luaL_reg luampd_mreg[] =
 {
-    { "connect",        connect },
-    { "disconnect",     disconnect },
-    { "next",           next },
-//     { "prev",           l_prev },
-//     { "play",           l_play },
+    { "connect",        luampd_connect },
+    { "disconnect",     luampd_disconnect },
+    { "next",           luampd_next },
+    { "prev",           luampd_prev },
+    { "play",           luampd_play },
+    { "stop",           luampd_stop },
 //     { "play_pause",     l_play_pause },
-//     { "pause",          l_pause },
+    { "pause",          luampd_pause },
+    { "set_random",     luampd_set_random },
+    { "get_random",     luampd_get_random },
+    { "set_repeat",     luampd_set_repeat },
+    { "get_repeat",     luampd_get_repeat },
+    { "play_id",        luampd_play_id },
+    { "get_song",       luampd_get_song },
+    { "get_status",     luampd_get_status },
 //     { "stop",           l_stop },
 //     { "toggle_repeat",  l_toggle_repeat },
 //     { "toggle_random",  l_toggle_random },
