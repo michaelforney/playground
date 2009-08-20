@@ -1,12 +1,13 @@
 PROJECT(mybar)
 
 FIND_PACKAGE(PkgConfig REQUIRED)
+FIND_PACKAGE(Boost REQUIRED)
 
 PKG_CHECK_MODULES(XCB REQUIRED xcb)
 
 INCLUDE_DIRECTORIES(${XCB_INCLUDE_DIRS})
 
-SET(MyBarSources mybar.c input.c)
+SET(MyBarSources mybar.cpp draw.cpp input.cpp)
 
 ADD_EXECUTABLE(mybar ${MyBarSources})
 

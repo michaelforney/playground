@@ -18,18 +18,25 @@
     Copyright (C) 2009, Michael Forney <michael@obberon.com>
  */
 
-#ifndef DRAW_H
-#define DRAW_H
+#include "input.h"
 
-#include <xcb/xcb.h>
+#include "draw.h"
+
+#include <iostream>
 #include <string>
 
-extern void draw(const std::string & input);
-extern void draw_init();
-extern void draw_loop();
-extern void draw_cleanup();
-
-extern bool running;
-
-#endif
+void * input_loop(void * arg)
+{
+    std::string input;
+    while(true)
+    {
+        std::getline(std::cin, input);
+        if (input.size() == 0)
+        {
+            running = false;
+        }
+        std::cout << "input: " << input << '\n';
+        draw(input);
+    }
+}
 

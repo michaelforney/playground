@@ -19,17 +19,26 @@
  */
 
 #include "input.h"
+#include "draw.h"
 
-#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
 #include <malloc.h>
+#include <pthread.h>
+#include <cstdlib>
+#include <string>
 
-void * input_loop(void * arg)
+pthread_t input_thread;
+
+int main(int argc, char * argv[])
 {
-    char * input = NULL;
-    size_t length = 0;
-    while(getline(&input, &length, stdin) != -1)
-    {
-        printf("message: %s", input);
-    }
+    draw_init();
+
+    input_thread = pthread_create(&input_thread, NULL, input_loop, NULL);
+    draw_loop();
+
+    draw_cleanup();
+
+    return 0;
 }
 
