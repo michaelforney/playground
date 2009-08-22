@@ -22,20 +22,31 @@
 #include "draw.h"
 
 #include <unistd.h>
-#include <string.h>
-#include <malloc.h>
 #include <pthread.h>
 #include <cstdlib>
+#include <iostream>
 #include <string>
-
-pthread_t input_thread;
 
 int main(int argc, char * argv[])
 {
+    pthread_t input_thread;
+    pthread_t draw_thread;
+
+    pthread_attr_t input_attr;
+
+    pthread_attr_init(&input_attr);
+    pthread_attr_setdetachstate(&input_attr, PTHREAD_CREATE_JOINABLE);
+
     draw_init();
 
-    input_thread = pthread_create(&input_thread, NULL, input_loop, NULL);
-    draw_loop();
+    std::cout << "Creating input thread: " << pthread_create(&input_thread, &input_attr, input_loop, NULL) << "\n";
+    std::cout << "Creating draw thread: " << pthread_create(&draw_thread, NULL, draw_loop, NULL) << "\n";
+
+    pthread_attr_destroy(&input_attr);
+
+    void * test;
+    pthread_join(input_thread, &test);
+    pthread_cancel(draw_thread);
 
     draw_cleanup();
 

@@ -23,6 +23,7 @@
 #include "draw.h"
 
 #include <iostream>
+#include <pthread.h>
 #include <string>
 
 void * input_loop(void * arg)
@@ -31,12 +32,14 @@ void * input_loop(void * arg)
     while(true)
     {
         std::getline(std::cin, input);
-        if (input.size() == 0)
+        if (std::cin.eof())
         {
-            running = false;
+            std::cout << "eof, exiting thread\n";
+            pthread_exit(NULL);
         }
-        std::cout << "input: " << input << '\n';
-        draw(input);
+        std::cout << "size: " << input.size() << "\n";
+        std::cout << "input: " << input << "\n";
+        process_input(input);
     }
 }
 

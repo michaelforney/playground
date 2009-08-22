@@ -24,9 +24,9 @@
 #include <xcb/xcb.h>
 #include <string>
 
-extern void draw(const std::string & input);
+extern void process_input(const std::string & input);
 extern void draw_init();
-extern void draw_loop();
+extern void * draw_loop(void * arg);
 extern void draw_cleanup();
 
 extern bool running;
